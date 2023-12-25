@@ -28,6 +28,7 @@ appclient_id = None
 appclient_secret = None
 seen_pages = BloomFilter(max_elements=50000, error_rate=0.01)
 
+
 def extract_links(url: str, timeout: int = 2, install_driver: bool = True):
     webdriver_options = Options()
     webdriver_prefs = {}
@@ -55,6 +56,7 @@ def extract_links(url: str, timeout: int = 2, install_driver: bool = True):
         raise
     return
 
+
 def _get_jwt_token(auth_url: str, appclient_id: str, appclient_secret: str):
     """Connect to the server and get a JWT token."""
     token_endpoint = f"{auth_url}/oauth2/token"
@@ -62,6 +64,7 @@ def _get_jwt_token(auth_url: str, appclient_id: str, appclient_secret: str):
         appclient_id, appclient_secret, scope="")
     token = session.fetch_token(token_endpoint, grant_type="client_credentials")
     return token["access_token"]
+
 
 def crawl_url(url: str, crawl_id: str, customer_id: int, corpus_id: int,
               crawl_pattern: re, idx_address: str, retry: bool = False,
@@ -71,16 +74,15 @@ def crawl_url(url: str, crawl_id: str, customer_id: int, corpus_id: int,
 
     if crawl_pattern != None and not crawl_pattern.match(url):
         return "Crawl pattern not matched", False
-    
+
     filename = str(time.time()) + ".pdf"
     if retry == False or prefetched_filename != None:
         logging.info("Grabbing %s", url)
         # r = requests.get(url)
         if pdf_driver == 'chrome':
-          res = converter.convert(url, filename,
-                                  install_driver=install_chrome_driver)
+            res = converter.convert(url, filename, install_driver=install_chrome_driver)
         elif pdf_driver == 'wkhtmltopdf':
-          list_files = subprocess.run(["wkhtmltopdf", url, filename])
+            list_files = subprocess.run(["wkhtmltopdf", url, filename])
     else:
         filename = prefetched_filename
 
@@ -93,7 +95,7 @@ def crawl_url(url: str, crawl_id: str, customer_id: int, corpus_id: int,
         }
     elif pdf_driver == 'wkhtmltopdf':
         url_obj = urlparse(url)
-        url_no_fragment=url_obj._replace(fragment="").geturl()
+        url_no_fragment = url_obj._replace(fragment="").geturl()
         files = {
             "file": (f"{crawl_id}-{url_no_fragment}", open(filename, 'rb'), 'application/pdf'),
         }
@@ -117,13 +119,14 @@ def crawl_url(url: str, crawl_id: str, customer_id: int, corpus_id: int,
                   install_chrome_driver=install_chrome_driver)
     elif response.status_code != 200:
         logging.error("REST upload failed with code %d, reason %s, text %s",
-                    response.status_code,
-                    response.reason,
-                    response.text)
+                      response.status_code,
+                      response.reason,
+                      response.text)
         os.remove(filename)
         return response, False
     os.remove(filename)
     return response, True
+
 
 def crawl_rss(feed_url: str, crawl_id: str, customer_id: int, corpus_id: int,
               crawl_pattern: re, idx_address: str, pdf_driver: str = 'chrome',
@@ -139,6 +142,7 @@ def crawl_rss(feed_url: str, crawl_id: str, customer_id: int, corpus_id: int,
         except Exception as e:
             logging.error("Error crawling %s", entry.link)
     return
+
 
 def crawl_recursive(url: str, max_depth: int, crawl_id: str, customer_id: int,
                     corpus_id: int, crawl_pattern: re, idx_address: str,
@@ -170,6 +174,7 @@ def crawl_recursive(url: str, max_depth: int, crawl_id: str, customer_id: int,
         print(e, exc_type, exc_tb.tb_lineno)
         logging.error("Error crawling %s", url)
 
+
 def crawl_sitemap(homepage: str, crawl_id: str, customer_id: int,
                   corpus_id: int, crawl_pattern: re, idx_address: str,
                   pdf_driver: str = 'chrome', install_chrome_driver: bool = True):
@@ -184,6 +189,7 @@ def crawl_sitemap(homepage: str, crawl_id: str, customer_id: int,
         except Exception as e:
             logging.error("Error crawling %s", page.url)
     return
+
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -203,8 +209,8 @@ if __name__ == "__main__":
     parser.add_argument("--crawl-id", help="ID for the crawl for filtering", default="")
 
     parser.add_argument("--customer-id", type=int, help="Unique customer ID in Vectara platform.", required=True)
-    parser.add_argument("--corpus-id", 
-                        type=int, 
+    parser.add_argument("--corpus-id",
+                        type=int,
                         required=True,
                         help="Corpus ID to which data will be indexed and queried from.")
 
@@ -239,19 +245,19 @@ if __name__ == "__main__":
         crawl_pattern = None
         if args.crawl_pattern != None:
             crawl_pattern = re.compile(args.crawl_pattern)
-        
+
         if token:
             if args.crawl_type == 'single-page':
                 error, status = crawl_url(url=args.url,
-                                  crawl_id=args.crawl_id,
-                                  customer_id=args.customer_id,
-                                  corpus_id=args.corpus_id,
-                                  crawl_pattern=crawl_pattern,
-                                  idx_address=args.indexing_endpoint,
-                                  retry=False,
-                                  prefetched_filename=None,
-                                  pdf_driver=args.pdf_driver,
-                                  install_chrome_driver=args.install_chrome_driver)
+                                          crawl_id=args.crawl_id,
+                                          customer_id=args.customer_id,
+                                          corpus_id=args.corpus_id,
+                                          crawl_pattern=crawl_pattern,
+                                          idx_address=args.indexing_endpoint,
+                                          retry=False,
+                                          prefetched_filename=None,
+                                          pdf_driver=args.pdf_driver,
+                                          install_chrome_driver=args.install_chrome_driver)
             elif args.crawl_type == 'sitemap':
                 crawl_sitemap(url=args.url,
                               crawl_id=args.crawl_id,
