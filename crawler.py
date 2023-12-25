@@ -218,7 +218,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--install-chrome-driver",
                         action=argparse.BooleanOptionalAction,
-                        help="Whether the crawler should try to install the Chrome Driver for exracting links",
+                        help="Whether the crawler should try to install the Chrome Driver for extracting links",
                         default=True)
     parser.add_argument("--pdf-driver",
                         choices=['chrome', 'wkhtmltopdf'],
