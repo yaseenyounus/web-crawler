@@ -78,11 +78,10 @@ def crawl_url(url: str, crawl_id: str, customer_id: int, corpus_id: int,
     filename = str(time.time()) + ".pdf"
     if retry == False or prefetched_filename != None:
         logging.info("Grabbing %s", url)
-        # r = requests.get(url)
         if pdf_driver == 'chrome':
-            res = converter.convert(url, filename, install_driver=install_chrome_driver)
+            converter.convert(url, filename, install_driver=install_chrome_driver)
         elif pdf_driver == 'wkhtmltopdf':
-            list_files = subprocess.run(["wkhtmltopdf", url, filename])
+            subprocess.run(["wkhtmltopdf", url, filename])
     else:
         filename = prefetched_filename
 
